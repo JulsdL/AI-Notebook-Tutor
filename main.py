@@ -20,7 +20,7 @@ load_dotenv()
 
 # Configuration for OpenAI
 OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
-openai_chat_model = ChatOpenAI(model="gpt-4-turbo", temperature=0)
+openai_chat_model = ChatOpenAI(model="gpt-4-turbo", temperature=0.1)
 
 # Define the RAG prompt
 RAG_PROMPT = """
@@ -68,7 +68,7 @@ async def start_chat():
 
         loader = NotebookLoader(
             notebook_path,
-            include_outputs=True,
+            include_outputs=False,
             max_output_length=20,
             remove_newline=True,
             traceback=False
@@ -82,33 +82,18 @@ async def start_chat():
         embedding_model = OpenAIEmbeddings(model="text-embedding-3-small") # Initialize the embedding model
         qdrant_vectorstore = Qdrant.from_documents(split_chunks, embedding_model, location=":memory:", collection_name="Notebook") # Create a Qdrant vector store
         qdrant_retriever = qdrant_vectorstore.as_retriever() # Set the Qdrant vector store as a retriever
-        multiquery_retriever = MultiQueryRetriever.from_llm(retriever=qdrant_retriever, llm=openai_chat_model) # Create a multi-query retriever on top of the Qdrant retriever
+        multiquery_retriever = MultiQueryRetriever.from_llm(retriever=qdrant_retriever, llm=openai_chat_model, include_original=True) # Create a multi-query retriever on top of the Qdrant retriever
 
         # Store the multiquery_retriever in the user session
         cl.user_session.set("multiquery_retriever", multiquery_retriever)
 
-@cl.on_message
-async def main(message: cl.Message):
-    # Retrieve the multi-query retriever from session
-    multiquery_retriever = cl.user_session.get("multiquery_retriever")
-
-    if not multiquery_retriever:
-        await message.reply("No document processing chain found. Please upload a Jupyter notebook first.")
-        return
-
-    question = message.content
-    response = handle_query(question, multiquery_retriever)  # Process the question
-
-    msg = cl.Message(content=response)
-    await msg.send()
-
 
 @cl.on_message
 async def main(message: cl.Message):
     # Retrieve the multi-query retriever from session
     multiquery_retriever = cl.user_session.get("multiquery_retriever")
     if not multiquery_retriever:
-        await message.reply("No document processing setup found. Please upload a Jupyter notebook first.")
+        await cl.Message(content="No document processing setup found. Please upload a Jupyter notebook first.").send()
         return
 
     question = message.content
