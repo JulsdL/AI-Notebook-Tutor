@@ -28,9 +28,9 @@ OPENAI_API_KEY=your-key-here
 4. Run the application using the following command:
 
 ```bash
-chainlit run app.py
+chainlit run aims_tutor/app.py
 ```
 
 ## Usage
 
-Start a chat session and upload a Jupyter notebook file. The application will process the document and you can then ask questions related to the content of the notebook. It might take some time to answer some question, so please be patient.
+Start a chat session and upload a Jupyter notebook file. The application will process the document and you can then ask questions related to the content of the notebook. It might take some time to answer some question (should be less than 1 min), so please be patient.
