@@ -40,12 +40,10 @@ def generate_quiz(
     num_questions: Annotated[int, "Number of questions to generate"] = 5
 ) -> Annotated[List[dict], "List of quiz questions"]:
     """Generate a quiz based on the provided documents."""
-    # Placeholder logic for quiz generation
-    # In a real scenario, you'd use NLP techniques to generate questions
     questions = [{"question": f"Question {i+1}", "options": ["Option 1", "Option 2", "Option 3"], "answer": "Option 1"} for i in range(num_questions)]
     return questions
 
-# Define a function to create agents
+# Function to create agents
 def create_agent(
     llm: ChatOpenAI,
     tools: list,
@@ -70,12 +68,12 @@ def create_agent(
     executor = AgentExecutor(agent=agent, tools=tools)
     return executor
 
-# Define a function to create agent nodes
+# Function to create agent nodes
 def agent_node(state, agent, name):
     result = agent.invoke(state)
     return {"messages": state["messages"] + [AIMessage(content=result["output"], name=name)]}
 
-# Define a function to create the supervisor
+# Function to create the supervisor
 def create_team_supervisor(llm: ChatOpenAI, system_prompt, members) -> AgentExecutor:
     """An LLM-based router."""
     options = ["WAIT", "FINISH"] + members
@@ -138,8 +136,9 @@ def create_aims_chain(retrieval_chain):
     quiz_agent = create_agent(
         llm,
         [generate_quiz, retrieve_information_tool],
-        "You are a quiz creator that generates quizzes based on the provided notebook content.",
+        "You are a quiz creator that generates quizzes based on the provided notebook content. Use the retrieval tool to gather context if needed.",
     )
+
     quiz_node = functools.partial(agent_node, agent=quiz_agent, name="QuizAgent")
 
     # Create Supervisor Agent
