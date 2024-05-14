@@ -13,7 +13,7 @@ load_dotenv()
 
 # Configuration for OpenAI
 OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
-openai_chat_model = ChatOpenAI(model="gpt-4-turbo", temperature=0.1)
+openai_chat_model = ChatOpenAI(model="gpt-4o", temperature=0.1)
 
 class DocumentManager:
     """
@@ -82,7 +82,7 @@ class DocumentManager:
 
         qdrant_vectorstore = Qdrant.from_documents(split_chunks, embedding_model, location=":memory:", collection_name="Notebook")
 
-        qdrant_retriever = qdrant_vectorstore.as_retriever() # Set the Qdrant vector store as a retriever
+        qdrant_retriever = qdrant_vectorstore.as_retriever()
 
         multiquery_retriever = MultiQueryRetriever.from_llm(retriever=qdrant_retriever, llm=openai_chat_model, include_original=True) # Create a multi-query retriever on top of the Qdrant retriever
 
