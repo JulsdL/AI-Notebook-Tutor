@@ -9,9 +9,30 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
 import functools
+from retrieval import RetrievalManager
 
 # Load environment variables
 load_dotenv()
+
+# Instantiate the language model
+llm = ChatOpenAI(model="gpt-4o")
+
+class RetrievalChainWrapper:
+    def __init__(self, retrieval_chain):
+        self.retrieval_chain = retrieval_chain
+
+    def retrieve_information(
+        self,
+        query: Annotated[str, "query to ask the RAG tool"]
+    ):
+        """Use this tool to retrieve information about the provided notebook."""
+        response = self.retrieval_chain.invoke({"question": query})
+        return response["response"].content
+
+# Create an instance of the wrapper
+def get_retrieve_information_tool(retrieval_chain):
+    wrapper_instance = RetrievalChainWrapper(retrieval_chain)
+    return tool(wrapper_instance.retrieve_information)
 
 @tool
 def generate_quiz(
@@ -23,14 +44,6 @@ def generate_quiz(
     # In a real scenario, you'd use NLP techniques to generate questions
     questions = [{"question": f"Question {i+1}", "options": ["Option 1", "Option 2", "Option 3"], "answer": "Option 1"} for i in range(num_questions)]
     return questions
-
-@tool
-def retrieve_information(
-    query: Annotated[str, "query to ask the retrieve information tool"]
-    ):
-    """Use Retrieval Augmented Generation to retrieve information about the provided content."""
-    return {"response": "This is a placeholder response for retrieval information."}
-
 
 # Define a function to create agents
 def create_agent(
@@ -107,63 +120,48 @@ class AIMSState(TypedDict):
     quiz: List[dict]
 
 
-# Instantiate the language model
-llm = ChatOpenAI(model="gpt-4o")
+# Create the LangGraph chain
+def create_aims_chain(retrieval_chain):
 
-# Create QA Agent
-qa_agent = create_agent(
-    llm,
-    [retrieve_information],  # Existing QA tool
-    "You are a QA assistant who answers questions about the provided notebook content.",
-)
-qa_node = functools.partial(agent_node, agent=qa_agent, name="QAAgent")
+    retrieve_information_tool = get_retrieve_information_tool(retrieval_chain)
 
-# Create Quiz Agent
-quiz_agent = create_agent(
-    llm,
-    [generate_quiz],
-    "You are a quiz creator that generates quizzes based on the provided notebook content.",
-)
-quiz_node = functools.partial(agent_node, agent=quiz_agent, name="QuizAgent")
+    # Create QA Agent
+    qa_agent = create_agent(
+        llm,
+        [retrieve_information_tool],
+        "You are a QA assistant who answers questions about the provided notebook content.",
+    )
 
-# Create Supervisor Agent
-supervisor_agent = create_team_supervisor(
-    llm,
-    "You are a supervisor tasked with managing a conversation between the following agents: QAAgent, QuizAgent. Given the user request, decide which agent should act next.",
-    ["QAAgent", "QuizAgent"],
-)
+    qa_node = functools.partial(agent_node, agent=qa_agent, name="QAAgent")
 
-# Build the LangGraph
-aims_graph = StateGraph(AIMSState)
-aims_graph.add_node("QAAgent", qa_node)
-aims_graph.add_node("QuizAgent", quiz_node)
-aims_graph.add_node("supervisor", supervisor_agent)
+    # Create Quiz Agent
+    quiz_agent = create_agent(
+        llm,
+        [generate_quiz, retrieve_information_tool],
+        "You are a quiz creator that generates quizzes based on the provided notebook content.",
+    )
+    quiz_node = functools.partial(agent_node, agent=quiz_agent, name="QuizAgent")
 
-aims_graph.add_edge("QAAgent", "supervisor")
-aims_graph.add_edge("QuizAgent", "supervisor")
-aims_graph.add_conditional_edges(
-    "supervisor",
-    lambda x: x["next"],
-    {"QAAgent": "QAAgent", "QuizAgent": "QuizAgent", "WAIT": END, "FINISH": END},
-)
+    # Create Supervisor Agent
+    supervisor_agent = create_team_supervisor(
+        llm,
+        "You are a supervisor tasked with managing a conversation between the following agents: QAAgent, QuizAgent. Given the user request, decide which agent should act next.",
+        ["QAAgent", "QuizAgent"],
+    )
 
-aims_graph.set_entry_point("supervisor")
-chain = aims_graph.compile()
+    # Build the LangGraph
+    aims_graph = StateGraph(AIMSState)
+    aims_graph.add_node("QAAgent", qa_node)
+    aims_graph.add_node("QuizAgent", quiz_node)
+    aims_graph.add_node("supervisor", supervisor_agent)
 
-if __name__ == "__main__":
+    aims_graph.add_edge("QAAgent", "supervisor")
+    aims_graph.add_edge("QuizAgent", "supervisor")
+    aims_graph.add_conditional_edges(
+        "supervisor",
+        lambda x: x["next"],
+        {"QAAgent": "QAAgent", "QuizAgent": "QuizAgent", "WAIT": END, "FINISH": END},
+    )
 
-    # Define the function to enter the chain
-    def enter_chain(message: str):
-        results = {
-            "messages": [HumanMessage(content="I'd like to take a quiz based on the uploaded notebook.")],
-        }
-        return results
-
-    aims_chain = enter_chain | chain
-
-    for s in aims_chain.stream(
-        "I'd like to take a quiz based on the uploaded notebook.", {"recursion_limit": 15}
-    ):
-        if "__end__" not in s:
-            print(s)
-            print("---")
+    aims_graph.set_entry_point("supervisor")
+    return aims_graph.compile()

@@ -2,6 +2,8 @@ import chainlit as cl
 from dotenv import load_dotenv
 from document_processing import DocumentManager
 from retrieval import RetrievalManager
+from langchain_core.messages import AIMessage, HumanMessage
+from graph import create_aims_chain, AIMSState
 
 # Load environment variables
 load_dotenv()
@@ -36,16 +38,40 @@ async def start_chat():
         cl.user_session.set("docs", doc_manager.get_documents())
         cl.user_session.set("retrieval_manager", RetrievalManager(doc_manager.get_retriever()))
 
+        # Initialize LangGraph chain with the retrieval chain
+        retrieval_chain = cl.user_session.get("retrieval_manager").get_RAG_QA_chain()
+        cl.user_session.set("retrieval_chain", retrieval_chain)  # Store the retrieval chain in the session
+        aims_chain = create_aims_chain(retrieval_chain)
+        cl.user_session.set("aims_chain", aims_chain)
+
 @cl.on_message
 async def main(message: cl.Message):
-    # Retrieve the multi-query retriever from session
-    retrieval_manager = cl.user_session.get("retrieval_manager")
-    if not retrieval_manager:
+    # Retrieve the LangGraph chain from the session
+    aims_chain = cl.user_session.get("aims_chain")
+
+    if not aims_chain:
         await cl.Message(content="No document processing setup found. Please upload a Jupyter notebook first.").send()
         return
 
-    question = message.content
-    response = retrieval_manager.notebook_QA(question)  # Process the question
+    # Create the initial state with the user message
+    user_message = message.content
+    state = AIMSState(messages=[HumanMessage(content=user_message)], next="supervisor", quiz=[])
 
-    msg = cl.Message(content=response)
-    await msg.send()
+    print(f"Initial state: {state}")
+
+    # Process the message through the LangGraph chain
+    for s in aims_chain.stream(state, {"recursion_limit": 10}):
+        print(f"State after processing: {s}")
+
+        # Extract messages from the state
+        if "__end__" not in s:
+            agent_state = next(iter(s.values()))
+            if "messages" in agent_state:
+                response = agent_state["messages"][-1].content
+                print(f"Response: {response}")
+                await cl.Message(content=response).send()
+            else:
+                print("Error: No messages found in agent state.")
+        else:
+            print("Reached end state.")
+            break

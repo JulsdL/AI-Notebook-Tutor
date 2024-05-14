@@ -42,3 +42,10 @@ class RetrievalManager:
         response = retrieval_augmented_qa_chain.invoke({"question": question})
 
         return response["response"].content
+
+    def get_RAG_QA_chain(self):
+        return (
+            {"context": itemgetter("question") | self.retriever, "question": itemgetter("question")}
+            | RunnablePassthrough.assign(context=itemgetter("context"))
+            | {"response": self.prompts.get_rag_qa_prompt() | self.chat_model, "context": itemgetter("context")}
+        )
