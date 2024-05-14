@@ -2,14 +2,12 @@ from typing import Annotated, List, TypedDict
 from dotenv import load_dotenv
 from langchain_core.tools import tool
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
+from langchain_core.messages import AIMessage, BaseMessage
 from langchain.agents import AgentExecutor, create_openai_functions_agent
 from langchain.output_parsers.openai_functions import JsonOutputFunctionsParser
-from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
 import functools
-from retrieval import RetrievalManager
 
 # Load environment variables
 load_dotenv()
@@ -34,15 +32,6 @@ def get_retrieve_information_tool(retrieval_chain):
     wrapper_instance = RetrievalChainWrapper(retrieval_chain)
     return tool(wrapper_instance.retrieve_information)
 
-@tool
-def generate_quiz(
-    documents: Annotated[List[str], "List of documents to generate quiz from"],
-    num_questions: Annotated[int, "Number of questions to generate"] = 5
-) -> Annotated[List[dict], "List of quiz questions"]:
-    """Generate a quiz based on the provided documents."""
-    questions = [{"question": f"Question {i+1}", "options": ["Option 1", "Option 2", "Option 3"], "answer": "Option 1"} for i in range(num_questions)]
-    return questions
-
 # Function to create agents
 def create_agent(
     llm: ChatOpenAI,
@@ -65,13 +54,25 @@ def create_agent(
         ]
     )
     agent = create_openai_functions_agent(llm, tools, prompt)
-    executor = AgentExecutor(agent=agent, tools=tools)
+    executor = AgentExecutor(agent=agent, tools=tools, handle_parsing_errors=True)
     return executor
 
 # Function to create agent nodes
 def agent_node(state, agent, name):
     result = agent.invoke(state)
-    return {"messages": state["messages"] + [AIMessage(content=result["output"], name=name)]}
+    if 'messages' not in result: # Check if messages are present in the agent state
+        raise ValueError(f"No messages found in agent state: {result}")
+    new_state = {"messages": state["messages"] + [AIMessage(content=result["output"], name=name)]}
+    if "next" in result:
+        new_state["next"] = result["next"]
+    if name == "QuizAgent" and "quiz_created" in state and not state["quiz_created"]:
+        new_state["quiz_created"] = True
+        new_state["next"] = "FINISH" # Finish the conversation after the quiz is created and wait for a new user input
+    if name == "QAAgent":
+        new_state["question_answered"] = True
+        new_state["next"] = "question_answered"
+    return new_state
+
 
 # Function to create the supervisor
 def create_team_supervisor(llm: ChatOpenAI, system_prompt, members) -> AgentExecutor:
@@ -116,6 +117,8 @@ class AIMSState(TypedDict):
     messages: List[BaseMessage]
     next: str
     quiz: List[dict]
+    quiz_created: bool
+    question_answered: bool
 
 
 # Create the LangGraph chain
@@ -135,8 +138,14 @@ def create_aims_chain(retrieval_chain):
     # Create Quiz Agent
     quiz_agent = create_agent(
         llm,
-        [generate_quiz, retrieve_information_tool],
-        "You are a quiz creator that generates quizzes based on the provided notebook content. Use the retrieval tool to gather context if needed.",
+        [retrieve_information_tool],
+        "You are a quiz creator that generates quizzes based on the provided notebook content."
+
+        """First, You MUST Use the retrieval_inforation_tool to gather context from the notebook to gather relevant and accurate information.
+
+        Next, create a 5-question quiz based on the information you have gathered. Include the answers at the end of the quiz.
+
+        Present the quiz to the user in a clear and concise manner."""
     )
 
     quiz_node = functools.partial(agent_node, agent=quiz_agent, name="QuizAgent")
@@ -158,8 +167,8 @@ def create_aims_chain(retrieval_chain):
     aims_graph.add_edge("QuizAgent", "supervisor")
     aims_graph.add_conditional_edges(
         "supervisor",
-        lambda x: x["next"],
-        {"QAAgent": "QAAgent", "QuizAgent": "QuizAgent", "WAIT": END, "FINISH": END},
+        lambda x: "FINISH" if x.get("quiz_created") else ("FINISH" if x.get("question_answered") else x["next"]),
+        {"QAAgent": "QAAgent", "QuizAgent": "QuizAgent", "WAIT": END, "FINISH": END, "question_answered": END},
     )
 
     aims_graph.set_entry_point("supervisor")

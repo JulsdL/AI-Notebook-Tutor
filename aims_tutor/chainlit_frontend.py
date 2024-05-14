@@ -30,6 +30,7 @@ async def start_chat():
         ).send()
 
     file = files[0]  # Get the first file
+
     if file:
         notebook_path = file.path
         doc_manager = DocumentManager(notebook_path)
@@ -40,7 +41,7 @@ async def start_chat():
 
         # Initialize LangGraph chain with the retrieval chain
         retrieval_chain = cl.user_session.get("retrieval_manager").get_RAG_QA_chain()
-        cl.user_session.set("retrieval_chain", retrieval_chain)  # Store the retrieval chain in the session
+        cl.user_session.set("retrieval_chain", retrieval_chain)
         aims_chain = create_aims_chain(retrieval_chain)
         cl.user_session.set("aims_chain", aims_chain)
 
@@ -55,7 +56,8 @@ async def main(message: cl.Message):
 
     # Create the initial state with the user message
     user_message = message.content
-    state = AIMSState(messages=[HumanMessage(content=user_message)], next="supervisor", quiz=[])
+    state = AIMSState(messages=[HumanMessage(content=user_message)], next="supervisor", quiz=[], quiz_created=False, question_answered=False)
+
 
     print(f"Initial state: {state}")
 
@@ -73,5 +75,15 @@ async def main(message: cl.Message):
             else:
                 print("Error: No messages found in agent state.")
         else:
+            # Check if the quiz was created and send it to the frontend
+            if state["quiz_created"]:
+                quiz_message = state["messages"][-1].content
+                await cl.Message(content=quiz_message).send()
+            # Check if a question was answered and send the response to the frontend
+            if state["question_answered"]:
+                qa_message = state["messages"][-1].content
+                await cl.Message(content=qa_message).send()
+
             print("Reached end state.")
+
             break
