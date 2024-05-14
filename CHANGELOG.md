@@ -1,3 +1,18 @@
+version 0.2.0 [2024-05-14]
+
+## Added
+
+- Introduced a comprehensive quiz functionality with LangGraph integration, enabling dynamic quiz generation and question answering based on Jupyter notebook content.
+- Added new Python dependencies (`langgraph==0.0.48`) to support the quiz functionality and improved interaction flow.
+- Implemented a new `graph.py` module to define the quiz and QA agents, along with the supervisor logic for managing conversation flow between agents.
+- Enhanced the `chainlit_frontend.py` to integrate the LangGraph chain, facilitating real-time interaction with the quiz and QA functionality.
+- Updated the `document_processing.py` and `retrieval.py` modules to support the new quiz functionality, including adjustments to the OpenAI model configuration and retrieval logic.
+
+## Modified
+
+- Updated the OpenAI model used in `document_processing.py` from "gpt-4-turbo" to "gpt-4o" to improve the quality of document processing and retrieval.
+- Refined the retrieval logic in `retrieval.py` to include a new method for initializing the RAG QA chain, enhancing the system's ability to provide accurate and contextually relevant answers.
+
 version 0.1.1 [2024-05-13]
 
 ## Modified
