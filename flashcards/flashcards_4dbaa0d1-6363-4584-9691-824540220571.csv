@@ -1,0 +1,11 @@
+Front,Back
+What is the first step in creating a retriever for a document?,The first step is loading the documents using a loader like `PyMuPDFLoader` to load documents from a PDF file.
+Which function is used to load documents from a PDF file?,The function `PyMuPDFLoader` is used to load documents from a PDF file.
+How are documents split into chunks for processing?,"Documents are split into chunks using the `RecursiveCharacterTextSplitter`, which divides the documents based on predefined rules like token limits and split characters."
+What is the purpose of chunking documents?,Chunking documents into smaller parts helps in managing and processing them more efficiently for embedding and retrieval.
+Which library is used for loading a pre-trained embedding model?,The `HuggingFaceEmbeddings` library is used for loading a pre-trained embedding model.
+How do you specify the device for running the embedding model?,"You specify the device (e.g., 'cuda') in the `model_kwargs` parameter when loading the embedding model."
+What is Meta's FAISS used for in the retriever creation process?,Meta's FAISS is used to power dense vector search by creating a vector store from the document chunks and embedding model.
+How do you convert a vector store into a retriever?,You convert a vector store into a retriever using the `as_retriever` method.
+What is the role of the retriever in the retrieval-augmented generation (RAG) system?,"The retriever fetches relevant document chunks based on query vectors, providing contextually relevant responses."
+Which embedding model is used in the example provided for retriever creation?,The embedding model 'JulsdL/e2erag-arctic-m' from Hugging Face is used in the example.

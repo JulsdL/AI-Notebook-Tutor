@@ -1,0 +1,11 @@
+Front,Back
+What is the first step in the retriever creation process?,The first step is loading a fine-tuned embedding model from the hub using the HuggingFaceEmbeddings class. The model used is named 'JulsdL/e2erag-arctic-m' and it is configured to run on a CUDA device.
+Which class is used to load the embedding model in the retriever creation process?,The HuggingFaceEmbeddings class is used to load the embedding model.
+What is the name of the embedding model used in the retriever creation process?,The embedding model used is named 'JulsdL/e2erag-arctic-m'.
+On which device is the embedding model 'JulsdL/e2erag-arctic-m' configured to run?,The embedding model is configured to run on a CUDA device.
+What is the purpose of setting up a VectorStore in the retriever creation process?,The VectorStore is set up to power the dense vector search and is populated with documents that have been split into chunks and embedded using the embedding model.
+Which tool is used to set up the VectorStore in the retriever creation process?,Meta's FAISS (Facebook AI Similarity Search) is used to set up the VectorStore.
+How are documents prepared for the VectorStore in the retriever creation process?,Documents are split into chunks and embedded using the previously loaded embedding model before being added to the VectorStore.
+What is the final step in the retriever creation process?,The final step is converting the VectorStore into a retriever that can fetch relevant documents or chunks based on query embeddings.
+"In the context of retriever creation, what is the purpose of converting the VectorStore to a retriever?",Converting the VectorStore to a retriever allows it to be used for fetching relevant documents or chunks based on the query embeddings.
+How does a retriever enhance the model's ability in a Retrieval-Augmented Generation (RAG) setup?,"A retriever enhances the model's ability by providing contextually relevant responses based on the input queries, improving the quality and relevance of the generated content."

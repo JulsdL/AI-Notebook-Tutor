@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-import aims_tutor.chainlit_frontend as cl_frontend
+import notebook_tutor.chainlit_frontend as cl_frontend
 
 # Load environment variables
 load_dotenv()

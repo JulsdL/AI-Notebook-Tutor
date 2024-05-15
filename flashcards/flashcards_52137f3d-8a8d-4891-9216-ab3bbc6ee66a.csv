@@ -1,0 +1,11 @@
+Front,Back
+What library is used to load the fine-tuned embedding model for retriever creation?,The HuggingFaceEmbeddings class is used to load the fine-tuned embedding model.
+What model is loaded for embedding in the retriever creation process?,The model 'JulsdL/e2erag-arctic-m' is loaded for embedding.
+On which device is the embedding model set to run?,The embedding model is set to run on a CUDA device.
+Which class is used to set up the vector store in retriever creation?,The FAISS class from Meta is used to set up the vector store.
+What is the purpose of the vector store in the retriever creation process?,The vector store powers the dense vector search by storing documents that have been split into chunks and embedded.
+How is the vector store created in the retriever creation process?,The vector store is created from documents that have been split into chunks and embedded using the loaded embedding model.
+How is the vector store converted into a retriever?,The vector store is converted into a retriever using the 'as_retriever()' method.
+What is a retriever used for in the context of retriever creation?,A retriever is used to retrieve context based on a query for a language model.
+What is the benefit of creating a retriever in a RAG setup?,Creating a retriever enhances the capabilities of language models by providing them with relevant context for generating responses.
+What does 'RAG' stand for in the context of retriever creation?,'RAG' stands for Retrieval-Augmented Generation.

@@ -1,0 +1,11 @@
+Front,Back
+What is the first step in the retriever creation process?,The first step in the retriever creation process is loading the embedding model.
+Which model is used as the embedding model in the retriever creation process?,The embedding model used is 'JulsdL/e2erag-arctic-m'.
+Which class and module are used to load the embedding model?,The embedding model is loaded using the HuggingFaceEmbeddings class from the langchain_community.embeddings module.
+On which device is the embedding model configured to run?,The embedding model is configured to run on a CUDA device.
+What is the purpose of the VectorStore in the retriever creation process?,The VectorStore is created to power dense vector searches.
+Which technology is used to set up the VectorStore?,Meta's FAISS (Facebook AI Similarity Search) is used to set up the VectorStore.
+How are the documents prepared for creating the VectorStore?,The documents are split into chunks before creating the VectorStore.
+Which method is called to create the VectorStore from the documents and embedding model?,The method FAISS.from_documents is called to create the VectorStore.
+How is the VectorStore converted into a retriever?,The VectorStore is converted into a retriever by invoking the as_retriever() method on the vector_store object.
+What are the benefits of the retriever created through this process?,"The retriever leverages the power of dense embeddings and efficient search capabilities provided by FAISS, making it effective for retrieval-augmented tasks."
