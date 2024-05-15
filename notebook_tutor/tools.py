@@ -22,8 +22,8 @@ class FlashcardTool(BaseTool):
     ) -> str:
         """Use the tool to create flashcards."""
         filename = f"flashcards_{uuid.uuid4()}.csv"
-        save_path = os.path.join('flashcards', filename)  # Save in 'flashcards' directory
-        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        save_path = os.path.join('.files', filename)
+        # os.makedirs(os.path.dirname(save_path), exist_ok=True) # Create directory if it doesn't exist
         with open(save_path, 'w', newline='') as csvfile:
             fieldnames = ['Front', 'Back']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)

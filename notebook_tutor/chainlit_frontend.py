@@ -75,24 +75,25 @@ async def main(message: cl.Message):
         flashcard_filename="",
     )
 
-    print(f"Initial state: {state}")
+    print("\033[93m" + f"Initial state: {state}" + "\033[0m")
 
     # Process the message through the LangGraph chain
     for s in tutor_chain.stream(state, {"recursion_limit": 10}):
-        print(f"State after processing: {s}")
+        print("\033[93m" + f"State after processing: {s}" + "\033[0m")
 
         # Extract messages from the state
         if "__end__" not in s:
             agent_state = next(iter(s.values()))
             if "messages" in agent_state:
                 response = agent_state["messages"][-1].content
-                print(f"Response: {response}")
+                print("\033[93m" + f"Response: {response}" + "\033[0m")
                 await cl.Message(content=response).send()
             else:
                 print("Error: No messages found in agent state.")
         else:
             # Extract the final state
             final_state = next(iter(s.values()))
+            print("\033[93m" + f"Final state: {final_state}" + "\033[0m")
 
             # Check if the quiz was created and send it to the frontend
             if final_state.get("quiz_created"):
@@ -109,20 +110,20 @@ async def main(message: cl.Message):
                 flashcards_message = final_state["messages"][-1].content
                 await cl.Message(content=flashcards_message).send()
 
-                # Create a full path to the file
+                # Create a relative path to the file
                 flashcard_filename = final_state["flashcard_filename"]
-                print(f"Flashcard filename: {flashcard_filename}")
-                flashcard_path = os.path.abspath(flashcard_filename)
-                print(f"Flashcard path: {flashcard_path}")
+                print("\033[93m" + f"Flashcard filename: {flashcard_filename}" + "\033[0m")
+                flashcard_path = os.path.join(".files", flashcard_filename)
+                print("\033[93m" + f"Flashcard path: {flashcard_path}" + "\033[0m")
 
                 # Use the File class to send the file
-                file_element = cl.File(name=os.path.basename(flashcard_filename), path=flashcard_path)
-                print(f"Sending flashcards file: {file_element}")
+                file_element = cl.File(name=os.path.basename(flashcard_path), path=flashcard_path)
+                print("\033[93m" + f"Sending flashcards file: {file_element}" + "\033[0m")
                 await cl.Message(
                     content="Here are your flashcards:",
                     elements=[file_element]
                 ).send()
 
-            print("Reached END state.")
+            print("\033[93m" + "Reached END state." + "\033[0m")
 
             break
