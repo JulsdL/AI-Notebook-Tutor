@@ -1,3 +1,19 @@
+version 0.3.0 [2024-05-16]
+
+## Added
+
+- Implemented the Flashcards feature, allowing users to generate and download flashcards based on Jupyter notebook content.
+- Introduced new agents (QAAgent, QuizAgent, FlashcardsAgent) for handling specific tasks like question answering, quiz generation, and flashcard creation.
+- Added a new `chainlit_frontend.py` module for Chainlit integration, enabling interactive chat functionality with users.
+- Developed a comprehensive state management system (`states.py`) to track conversation states and user interactions.
+- Created `prompt_templates.py` and `graph.py` modules to define prompt templates and the conversation flow graph, respectively.
+- Established a new tool (`tools.py`) for flashcard creation, supporting CSV format suitable for Anki import.
+
+## Modified
+
+- Updated the README.md to reflect the new project name (AI-Notebook-Tutor) and provided updated instructions for running the application.
+- Enhanced the `.gitignore` file to include directories for flashcards and Chainlit configurations, improving project organization.
+
 version 0.2.0 [2024-05-14]
 
 ## Added
