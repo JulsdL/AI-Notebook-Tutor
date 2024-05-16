@@ -1,3 +1,12 @@
+---
+title: DeepPDF AI
+emoji: 📖
+colorFrom: pink
+colorTo: yellow
+sdk: docker
+pinned: false
+---
+
 # AI-Notebook-Tutor
 
 # RAG Application for QA in Jupyter Notebook
@@ -34,3 +43,7 @@ chainlit run notebook_tutor/app.py
 ## Usage
 
 Start a chat session and upload a Jupyter notebook file. The application will process the document and you can then ask questions related to the content of the notebook. It might take some time to answer some question (should be less than 1 min), so please be patient.
+
+## Acknowledgements
+
+This project uses technologies including LangChain, OpenAI's GPT models, Qdrant for vector storage and ChainLit. Thanks to all open-source contributors and organizations that make these tools available.

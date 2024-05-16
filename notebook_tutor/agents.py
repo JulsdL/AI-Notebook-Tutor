@@ -25,7 +25,18 @@ def create_agent(
     tools: list,
     system_prompt: str,
 ) -> AgentExecutor:
-    """Create a function-calling agent and add it to the graph."""
+    """
+    Create a function-calling agent and add it to the graph.
+
+    Parameters:
+        llm (ChatOpenAI): The ChatOpenAI instance used for the agent.
+        tools (list): A list of tools available to the agent.
+        system_prompt (str): The system prompt for the agent.
+
+    Returns:
+        AgentExecutor: The AgentExecutor instance containing the agent.
+
+    """
     system_prompt += "\nWork autonomously according to your specialty, using the tools available to you."
     " Do not ask for clarification."
     " Your other team members (and other teams) will collaborate with you with their own specialties."
@@ -46,6 +57,21 @@ def create_agent(
 
 # Function to create agent nodes
 def agent_node(state, agent, name):
+    """
+    Invoke an agent and update the state based on the agent's output.
+
+    Parameters:
+        state (dict): The current state of the conversation.
+        agent (AgentExecutor): The agent to be invoked.
+        name (str): The name of the agent.
+
+    Returns:
+        dict: The updated state after invoking the agent.
+
+    Raises:
+        ValueError: If no messages are found in the agent state.
+
+    """
     result = agent.invoke(state)
     if 'messages' not in result:
         raise ValueError(f"No messages found in agent state: {result}")
@@ -65,7 +91,18 @@ def agent_node(state, agent, name):
 
 # Function to create the supervisor
 def create_team_supervisor(llm: ChatOpenAI, system_prompt, members) -> AgentExecutor:
-    """An LLM-based router."""
+    """
+    An LLM-based router.
+
+    Parameters:
+        llm (ChatOpenAI): The ChatOpenAI instance used for the supervisor.
+        system_prompt (str): The system prompt for the supervisor.
+        members (list): A list of team members.
+
+    Returns:
+        AgentExecutor: The AgentExecutor instance containing the supervisor.
+
+    """
     options = ["WAIT", "FINISH"] + members
     function_def = {
         "name": "route",

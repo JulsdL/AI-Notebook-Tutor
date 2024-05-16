@@ -10,6 +10,10 @@ class PromptTemplates:
     Methods:
         __init__(): Initializes all prompt templates as instance variables.
         get_rag_qa_prompt(): Returns the RAG QA prompt.
+        get_qa_agent_prompt(): Returns the QA Agent prompt.
+        get_quiz_agent_prompt(): Returns the Quiz Agent prompt.
+        get_flashcards_agent_prompt(): Returns the Flashcards Agent prompt.
+        get_supervisor_agent_prompt(): Returns the Supervisor Agent prompt.
 
     Example usage:
         prompt_templates = PromptTemplates()
@@ -41,7 +45,7 @@ class PromptTemplates:
         2. Search Notebook Content: Use the notebook content to gather relevant information and generate accurate and informative flashcards.
         3. Generate Flashcards: Create a series of flashcards content with clear questions on the front and detailed answers on the back. Ensure that the flashcards cover the essential points and concepts requested by the user.
         4. Export Flashcards: YOU MUST USE the flashcard_tool to create and export the flashcards in a format that can be easily imported into a flashcard management system, such as Anki.
-        5. Provide the list of flashcards in a clear and organized manner.
+        5. Provide the list of flashcards in a clear and organized manner. DO NOT SHARE THE LINK TO THE FLASHCARD FILE.
         Remember, your goal is to help the user learn efficiently and effectively by breaking down the notebook content into manageable, repeatable flashcards."""
 
         self.SupervisorAgent_prompt = "You are a supervisor tasked with managing a conversation between the following agents: QAAgent, QuizAgent, FlashcardsAgent. Given the user request, decide which agent should act next."

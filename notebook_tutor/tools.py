@@ -13,6 +13,23 @@ class FlashcardInput(BaseModel):
     flashcards: list = Field(description="A list of flashcards. Each flashcard should be a dictionary with 'question' and 'answer' keys.")
 
 class FlashcardTool(BaseTool):
+    """
+    FlashcardTool class.
+
+    This class represents a tool for creating flashcards in a .csv format suitable for import into Anki.
+
+    Attributes:
+        name (str): The name of the tool.
+        description (str): The description of the tool.
+        args_schema (Type[BaseModel]): The schema for the input arguments of the tool.
+
+    Methods:
+        _run(flashcards: list, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
+            Use the tool to create flashcards.
+
+        _arun(flashcards: list, run_manager: Optional[AsyncCallbackManagerForToolRun] = None) -> str:
+            Use the tool asynchronously.
+    """
     name = "create_flashcards"
     description = "Create flashcards in a .csv format suitable for import into Anki"
     args_schema: Type[BaseModel] = FlashcardInput
@@ -49,6 +66,18 @@ class FlashcardTool(BaseTool):
 create_flashcards_tool = FlashcardTool()
 
 class RetrievalChainWrapper:
+    """
+    RetrievalChainWrapper class.
+
+    This class wraps a retrieval chain and provides a method to retrieve information using the wrapped chain.
+
+    Attributes:
+        retrieval_chain: The retrieval chain to be wrapped.
+
+    Methods:
+        retrieve_information(query: str) -> str:
+            Use this tool to retrieve information about the provided notebook.
+    """
     def __init__(self, retrieval_chain):
         self.retrieval_chain = retrieval_chain
 
