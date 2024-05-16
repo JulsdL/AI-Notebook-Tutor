@@ -143,15 +143,6 @@ async def main(message: cl.Message):
     logger.info("Reached END state.")
 
 
-<<<<<<< HEAD
-# @cl.on_chat_end
-# async def end_chat():
-#     # Clean up the flashcards directory
-#     flashcard_directory = 'flashcards'
-#     if os.path.exists(flashcard_directory):
-#         shutil.rmtree(flashcard_directory)
-#         os.makedirs(flashcard_directory)
-=======
 @cl.on_chat_end
 async def end_chat():
     """
@@ -165,4 +156,3 @@ async def end_chat():
     if os.path.exists(flashcard_directory):
         shutil.rmtree(flashcard_directory)
         os.makedirs(flashcard_directory)
->>>>>>> db480d4542558f3c52f29670f66a01d33a2730d2
