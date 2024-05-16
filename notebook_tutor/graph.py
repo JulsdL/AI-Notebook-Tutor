@@ -10,6 +10,17 @@ load_dotenv()
 
 # Create the LangGraph chain
 def create_tutor_chain(retrieval_chain):
+    """
+    Create a tutor chain for the notebook tutor system.
+
+    This function creates a tutor chain for the notebook tutor system. The tutor chain consists of multiple agents, including a QA Agent, Quiz Agent, Flashcards Agent, and Supervisor Agent. Each agent is created with specific tools and prompts.
+
+    Parameters:
+        retrieval_chain (object): The retrieval chain used for information retrieval.
+
+    Returns:
+        StateGraph: The compiled tutor graph representing the tutor chain.
+    """
     retrieve_information_tool = get_retrieve_information_tool(retrieval_chain)
 
     # Create QA Agent

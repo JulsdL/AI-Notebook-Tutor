@@ -1,6 +1,6 @@
 langchain==0.1.20
 langgraph==0.0.48
-crewai==0.30.0
+langchain-openai==0.0.5
 qdrant-client==1.9.1
 python-dotenv==1.0.1
 chainlit==1.0.506
