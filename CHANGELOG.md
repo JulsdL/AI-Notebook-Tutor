@@ -1,3 +1,17 @@
+version 0.2.1 [2024-05-16]
+
+## Added
+
+- Dockerized the AI Notebook Tutor application for easier deployment and scalability.
+- Enhanced documentation and comments across various Python modules (`agents.py`, `prompt_templates.py`, `tools.py`, `chainlit_frontend.py`, `states.py`, `graph.py`) for better code readability and maintenance.
+- Added new Python dependencies (`langchain-openai==0.0.5`) to support the integration with OpenAI's GPT models.
+
+## Modified
+
+- Updated the project's README.md to include new sections on usage and acknowledgements, reflecting the shift from Chainlit to AI Notebook Tutor.
+- Refined the project structure and codebase, including significant updates to the frontend logic in `chainlit_frontend.py` for improved user interaction and feedback.
+- Modified the Dockerfile to set up a Python environment tailored for the AI Notebook Tutor, ensuring a consistent runtime environment.
+
 version 0.2.0 [2024-05-14]
 
 ## Added
