@@ -53,13 +53,24 @@ async def start_chat():
         tutor_chain = create_tutor_chain(retrieval_chain)
         cl.user_session.set("tutor_chain", tutor_chain)
 
-        ready_to_chat_message = "Notebook uploaded and processed successfully. You are now ready to chat!"
+        logger.info("Chat started and notebook uploaded successfully.")
+
+        ready_to_chat_message = "Notebook uploaded and processed successfully!"
         await cl.Message(content=ready_to_chat_message).send()
 
-        logger.info("Chat started and notebook uploaded successfully.")
+        invite_message = "You can now ask questions or request quizzes and flashcards based on the notebook content."
+        await cl.Message(content=invite_message).send()
+
+
 
 @cl.on_message
 async def main(message: cl.Message):
+    """
+    This is the main function that processes a message through the LangGraph chain.
+
+    Parameters:
+    - message (cl.Message): The message to be processed.
+    """
 
     # Retrieve the LangGraph chain from the session
     tutor_chain = cl.user_session.get("tutor_chain")
@@ -134,6 +145,12 @@ async def main(message: cl.Message):
 
 @cl.on_chat_end
 async def end_chat():
+    """
+    Clean up the flashcards directory after the chat ends.
+    This function is executed when the chat session ends.
+    It removes the 'flashcards' directory and all its contents, if it exists.
+    If the directory does not exist, it creates a new empty directory with the same name.
+    """
     # Clean up the flashcards directory
     flashcard_directory = 'flashcards'
     if os.path.exists(flashcard_directory):
