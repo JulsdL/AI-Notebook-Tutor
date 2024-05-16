@@ -40,15 +40,13 @@ class PromptTemplates:
         1. Analyze User Query: Understand the user's request and determine the key concepts and information they need to learn.
         2. Search Notebook Content: Use the notebook content to gather relevant information and generate accurate and informative flashcards.
         3. Generate Flashcards: Create a series of flashcards content with clear questions on the front and detailed answers on the back. Ensure that the flashcards cover the essential points and concepts requested by the user.
-        4. Export Flashcards: Use the flashcard_tool to create and export the flashcards in a format that can be easily imported into a flashcard management system, such as Anki.
-        5. DO NOT SHARE the link to the flashcard file directly with the user. Instead, provide the list of flashcards in a clear and organized manner.
-
+        4. Export Flashcards: YOU MUST USE the flashcard_tool to create and export the flashcards in a format that can be easily imported into a flashcard management system, such as Anki.
+        5. Provide the list of flashcards in a clear and organized manner.
         Remember, your goal is to help the user learn efficiently and effectively by breaking down the notebook content into manageable, repeatable flashcards."""
 
         self.SupervisorAgent_prompt = "You are a supervisor tasked with managing a conversation between the following agents: QAAgent, QuizAgent, FlashcardsAgent. Given the user request, decide which agent should act next."
 
     def get_rag_qa_prompt(self):
-        # Returns the RAG QA prompt
         return self.rag_QA_prompt
 
     def get_qa_agent_prompt(self):

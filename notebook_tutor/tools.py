@@ -22,6 +22,7 @@ class FlashcardTool(BaseTool):
     ) -> str:
         """Use the tool to create flashcards."""
         filename = f"flashcards_{uuid.uuid4()}.csv"
+
         save_path = os.path.join('flashcards', filename)
 
         os.makedirs(os.path.dirname(save_path), exist_ok=True)

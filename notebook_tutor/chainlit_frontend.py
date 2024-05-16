@@ -26,13 +26,13 @@ async def start_chat():
         "presence_penalty": 0,
     }
     cl.user_session.set("settings", settings)
-    welcome_message = "Welcome to the Notebook-Tutor! Please upload a Jupyter notebook (.ipynb and max. 5mb) to start."
+    welcome_message = "Welcome to the Notebook-Tutor!"
     await cl.Message(content=welcome_message).send()
 
     files = None
     while files is None:
         files = await cl.AskFileMessage(
-            content="Please upload a Jupyter notebook (.ipynb, max. 5mb):",
+            content="Please upload a Jupyter notebook (.ipynb, max. 5mb) to start:",
             accept={"application/x-ipynb+json": [".ipynb"]},
             max_size_mb=5
         ).send()
@@ -60,6 +60,7 @@ async def start_chat():
 
 @cl.on_message
 async def main(message: cl.Message):
+
     # Retrieve the LangGraph chain from the session
     tutor_chain = cl.user_session.get("tutor_chain")
 

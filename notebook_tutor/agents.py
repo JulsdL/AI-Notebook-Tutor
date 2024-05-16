@@ -54,9 +54,11 @@ def agent_node(state, agent, name):
     # Set the appropriate flags and next state
     if name == "QuizAgent":
         new_state["quiz_created"] = True
-    elif name == "QAAgent":
+
+    if name == "QAAgent":
         new_state["question_answered"] = True
-    elif name == "FlashcardsAgent":
+
+    if name == "FlashcardsAgent":
         new_state["flashcards_created"] = True
 
     return new_state
