@@ -6,6 +6,7 @@ from document_processing import DocumentManager
 from retrieval import RetrievalManager
 from langchain_core.messages import AIMessage, HumanMessage
 from graph import create_tutor_chain, TutorState
+import shutil
 
 # Load environment variables
 load_dotenv()
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 @cl.on_chat_start
 async def start_chat():
     settings = {
-        "model": "gpt-3.5-turbo",
+        "model": "gpt4o",
         "temperature": 0,
         "top_p": 1,
         "frequency_penalty": 0,
@@ -52,6 +53,9 @@ async def start_chat():
         tutor_chain = create_tutor_chain(retrieval_chain)
         cl.user_session.set("tutor_chain", tutor_chain)
 
+        ready_to_chat_message = "Notebook uploaded and processed successfully. You are now ready to chat!"
+        await cl.Message(content=ready_to_chat_message).send()
+
         logger.info("Chat started and notebook uploaded successfully.")
 
 @cl.on_message
@@ -72,49 +76,65 @@ async def main(message: cl.Message):
         quiz_created=False,
         question_answered=False,
         flashcards_created=False,
-        flashcard_filename="",
     )
 
-    print("\033[93m" + f"Initial state: {state}" + "\033[0m")
+    logger.info(f"Initial state: {state}")
 
     # Process the message through the LangGraph chain
-    for s in tutor_chain.stream(state, {"recursion_limit": 3}):
-        print("\033[93m" + f"State after processing: {s}" + "\033[0m")
+    for s in tutor_chain.stream(state, {"recursion_limit": 10}):
+        logger.info(f"State after processing: {s}")
 
         agent_state = next(iter(s.values()))
-        print("\033[93m" + f"Agent state: {agent_state}" + "\033[0m")
 
         if "QAAgent" in s:
             if s['QAAgent']['question_answered']:
-                print("\033[93m" + "************************Question answered**********************." + "\033[0m")
                 qa_message = agent_state["messages"][-1].content
+                logger.info(f"Sending QAAgent message: {qa_message}")
                 await cl.Message(content=qa_message).send()
 
         if "QuizAgent" in s:
             if s['QuizAgent']['quiz_created']:
-                print("\033[93m" + "************************Quiz created**********************." + "\033[0m")
                 quiz_message = agent_state["messages"][-1].content
+                logger.info(f"Sending QuizAgent message: {quiz_message}")
                 await cl.Message(content=quiz_message).send()
 
         if "FlashcardsAgent" in s:
             if s['FlashcardsAgent']['flashcards_created']:
-                print("\033[93m" + "************************Flashcards created**********************." + "\033[0m")
                 flashcards_message = agent_state["messages"][-1].content
+                logger.info(f"Sending FlashcardsAgent message: {flashcards_message}")
                 await cl.Message(content=flashcards_message).send()
 
-                flashcard_path = agent_state["flashcard_path"]
-                print("\033[93m" + f"Flashcard path: {flashcard_path}" + "\033[0m")
+                # Search for the flashcard file in the specified directory
+                flashcard_directory = 'flashcards'
+                flashcard_file = None
+                latest_time = 0
+                for root, dirs, files in os.walk(flashcard_directory):
+                    for file in files:
+                        if file.startswith('flashcards_') and file.endswith('.csv'):
+                            file_path = os.path.join(root, file)
+                            file_time = os.path.getmtime(file_path)
+                            if file_time > latest_time:
+                                latest_time = file_time
+                                flashcard_file = file_path
+
+                if flashcard_file:
+                    logger.info(f"Flashcard path: {flashcard_file}")
+                    # Use the File class to send the file
+                    file_element = cl.File(name="Flashcards", path=flashcard_file, display="inline")
+                    logger.info(f"Sending flashcards file: {file_element}")
+
+                    await cl.Message(
+                        content="Download the flashcards in .csv here:",
+                        elements=[file_element]
+                    ).send()
+
+    logger.info("Reached END state.")
 
 
-                # Use the File class to send the file
-                file_element = cl.File(name="Flashcards", path=flashcard_path)
-                print("\033[93m" + f"Sending flashcards file: {file_element}" + "\033[0m")
-                await cl.Message(
-                    content="Here are your flashcards:",
-                    elements=[file_element]
-                ).send()
-
-        final_state = s  # Save the final state after processing
-        print("\033[93m" + f"Final state: {final_state}" + "\033[0m")
-
-    print("\033[93m" + "Reached END state." + "\033[0m")
+@cl.on_chat_end
+async def end_chat():
+    # Clean up the flashcards directory
+    flashcard_directory = 'flashcards'
+    if os.path.exists(flashcard_directory):
+        shutil.rmtree(flashcard_directory)
+        os.makedirs(flashcard_directory)

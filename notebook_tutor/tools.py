@@ -1,4 +1,4 @@
-from typing import Optional, Type
+from typing import Optional, Type, Annotated
 from pydantic import BaseModel, Field
 from langchain.tools import BaseTool
 from langchain.callbacks.manager import (
@@ -22,10 +22,10 @@ class FlashcardTool(BaseTool):
     ) -> str:
         """Use the tool to create flashcards."""
         filename = f"flashcards_{uuid.uuid4()}.csv"
-        save_path = os.path.join('.files', filename)
-        print("\033[91m" + f"Saving flashcards to {save_path}" + "\033[0m")
+        save_path = os.path.join('flashcards', filename)
 
-        os.makedirs(os.path.dirname(save_path), exist_ok=True) # Create directory if it doesn't exist
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+
         with open(save_path, 'w', newline='') as csvfile:
             fieldnames = ['Front', 'Back']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -33,7 +33,10 @@ class FlashcardTool(BaseTool):
             writer.writeheader()
             for card in flashcards:
                 writer.writerow({'Front': card['question'], 'Back': card['answer']})
-        return save_path
+
+        print("\033[93m" + f"Flashcards successfully created and saved to {save_path}" + "\033[0m")
+
+        return "csv file created successfully."
 
     async def _arun(
         self, flashcards: list, run_manager: Optional[AsyncCallbackManagerForToolRun] = None
@@ -43,3 +46,15 @@ class FlashcardTool(BaseTool):
 
 # Instantiate the tool
 create_flashcards_tool = FlashcardTool()
+
+class RetrievalChainWrapper:
+    def __init__(self, retrieval_chain):
+        self.retrieval_chain = retrieval_chain
+
+    def retrieve_information(
+        self,
+        query: Annotated[str, "query to ask the RAG tool"]
+    ):
+        """Use this tool to retrieve information about the provided notebook."""
+        response = self.retrieval_chain.invoke({"question": query})
+        return response["response"].content
