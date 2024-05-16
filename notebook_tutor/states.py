@@ -9,4 +9,4 @@ class TutorState(TypedDict):
     quiz_created: bool
     question_answered: bool
     flashcards_created: bool
-    flashcard_filename: str
+    flashcard_path: str

@@ -1,5 +1,5 @@
 from typing import Optional, Type
-from langchain.pydantic_v1 import BaseModel, Field
+from pydantic import BaseModel, Field
 from langchain.tools import BaseTool
 from langchain.callbacks.manager import (
     AsyncCallbackManagerForToolRun,
@@ -23,7 +23,9 @@ class FlashcardTool(BaseTool):
         """Use the tool to create flashcards."""
         filename = f"flashcards_{uuid.uuid4()}.csv"
         save_path = os.path.join('.files', filename)
-        # os.makedirs(os.path.dirname(save_path), exist_ok=True) # Create directory if it doesn't exist
+        print("\033[91m" + f"Saving flashcards to {save_path}" + "\033[0m")
+
+        os.makedirs(os.path.dirname(save_path), exist_ok=True) # Create directory if it doesn't exist
         with open(save_path, 'w', newline='') as csvfile:
             fieldnames = ['Front', 'Back']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)

@@ -78,52 +78,43 @@ async def main(message: cl.Message):
     print("\033[93m" + f"Initial state: {state}" + "\033[0m")
 
     # Process the message through the LangGraph chain
-    for s in tutor_chain.stream(state, {"recursion_limit": 10}):
+    for s in tutor_chain.stream(state, {"recursion_limit": 3}):
         print("\033[93m" + f"State after processing: {s}" + "\033[0m")
 
-        # Extract messages from the state
-        if "__end__" not in s:
-            agent_state = next(iter(s.values()))
-            if "messages" in agent_state:
-                response = agent_state["messages"][-1].content
-                print("\033[93m" + f"Response: {response}" + "\033[0m")
-                await cl.Message(content=response).send()
-            else:
-                print("Error: No messages found in agent state.")
-        else:
-            # Extract the final state
-            final_state = next(iter(s.values()))
-            print("\033[93m" + f"Final state: {final_state}" + "\033[0m")
+        agent_state = next(iter(s.values()))
+        print("\033[93m" + f"Agent state: {agent_state}" + "\033[0m")
 
-            # Check if the quiz was created and send it to the frontend
-            if final_state.get("quiz_created"):
-                quiz_message = final_state["messages"][-1].content
-                await cl.Message(content=quiz_message).send()
-
-            # Check if a question was answered and send the response to the frontend
-            if final_state.get("question_answered"):
-                qa_message = final_state["messages"][-1].content
+        if "QAAgent" in s:
+            if s['QAAgent']['question_answered']:
+                print("\033[93m" + "************************Question answered**********************." + "\033[0m")
+                qa_message = agent_state["messages"][-1].content
                 await cl.Message(content=qa_message).send()
 
-            # Check if flashcards are ready and send the file to the frontend
-            if final_state.get("flashcards_created"):
-                flashcards_message = final_state["messages"][-1].content
+        if "QuizAgent" in s:
+            if s['QuizAgent']['quiz_created']:
+                print("\033[93m" + "************************Quiz created**********************." + "\033[0m")
+                quiz_message = agent_state["messages"][-1].content
+                await cl.Message(content=quiz_message).send()
+
+        if "FlashcardsAgent" in s:
+            if s['FlashcardsAgent']['flashcards_created']:
+                print("\033[93m" + "************************Flashcards created**********************." + "\033[0m")
+                flashcards_message = agent_state["messages"][-1].content
                 await cl.Message(content=flashcards_message).send()
 
-                # Create a relative path to the file
-                flashcard_filename = final_state["flashcard_filename"]
-                print("\033[93m" + f"Flashcard filename: {flashcard_filename}" + "\033[0m")
-                flashcard_path = os.path.join(".files", flashcard_filename)
+                flashcard_path = agent_state["flashcard_path"]
                 print("\033[93m" + f"Flashcard path: {flashcard_path}" + "\033[0m")
 
+
                 # Use the File class to send the file
-                file_element = cl.File(name=os.path.basename(flashcard_path), path=flashcard_path)
+                file_element = cl.File(name="Flashcards", path=flashcard_path)
                 print("\033[93m" + f"Sending flashcards file: {file_element}" + "\033[0m")
                 await cl.Message(
                     content="Here are your flashcards:",
                     elements=[file_element]
                 ).send()
 
-            print("\033[93m" + "Reached END state." + "\033[0m")
+        final_state = s  # Save the final state after processing
+        print("\033[93m" + f"Final state: {final_state}" + "\033[0m")
 
-            break
+    print("\033[93m" + "Reached END state." + "\033[0m")

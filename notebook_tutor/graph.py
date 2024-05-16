@@ -69,6 +69,8 @@ def agent_node(state, agent, name):
         raise ValueError(f"No messages found in agent state: {result}")
     new_state = {"messages": state["messages"] + [AIMessage(content=result["output"], name=name)]}
 
+    print("\033[93m" + f"agent_node function state {state}" + "\033[0m")
+
     # Set the appropriate flags and next state
     if name == "QuizAgent":
         new_state["quiz_created"] = True
@@ -76,7 +78,8 @@ def agent_node(state, agent, name):
         new_state["question_answered"] = True
     elif name == "FlashcardsAgent":
         new_state["flashcards_created"] = True
-        new_state["flashcard_filename"] = result["output"].split('(')[-1].strip(')')
+        print("\033[93m" + f"agent_node function result_output {result}" + "\033[0m")
+        # new_state["flashcard_path"] = result["output"]
 
     new_state["next"] = "FINISH"
     return new_state
