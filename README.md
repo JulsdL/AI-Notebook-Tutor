@@ -1,8 +1,8 @@
-# AIMS-Tutor
+# AI-Notebook-Tutor
 
 # RAG Application for QA in Jupyter Notebook
 
-AIMS-Tutor is designed to provide question-answering capabilities in a Jupyter Notebook using the Retrieval Augmented Generation (RAG) model. It's built on top of the LangChain and Chainlit platforms, and it uses the OpenAI API for the chat model.
+AI-Notebook-Tutor is designed to provide question-answering capabilities in a Jupyter Notebook using the Retrieval Augmented Generation (RAG) model. It's built on top of the LangChain and Chainlit platforms, and it uses the OpenAI API for the chat model.
 
 ## Features
 
@@ -28,7 +28,7 @@ OPENAI_API_KEY=your-key-here
 4. Run the application using the following command:
 
 ```bash
-chainlit run aims_tutor/app.py
+chainlit run notebook_tutor/app.py
 ```
 
 ## Usage

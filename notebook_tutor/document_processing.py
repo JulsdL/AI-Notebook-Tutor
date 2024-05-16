@@ -6,7 +6,7 @@ from langchain.retrievers import MultiQueryRetriever
 from langchain_openai.embeddings import OpenAIEmbeddings
 from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
-from aims_tutor.utils import tiktoken_len
+from notebook_tutor.utils import tiktoken_len
 
 # Load environment variables
 load_dotenv()
